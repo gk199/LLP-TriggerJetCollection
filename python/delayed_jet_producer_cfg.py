@@ -25,6 +25,9 @@ process.load('CommonTools.ParticleFlow.EITopPAG_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
+process.load('DelayedJetCollection.L1DelayedJet.DelayedL1Jet_cfi')
+
+
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(50),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
@@ -113,10 +116,10 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.AODSIMoutput_step = cms.EndPath(process.AODSIMoutput)
 
-process.p = cms.Path(process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
+process.p = cms.Path(process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.RECOSIMoutput_step,process.AODSIMoutput_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.RECOSIMoutput_step,process.AODSIMoutput_step,process.p)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

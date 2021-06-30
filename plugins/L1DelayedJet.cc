@@ -70,6 +70,7 @@ private:
   std::string hcalTPSourceLabel;
   edm::EDGetTokenT<l1t::JetBxCollection> jetToken;
   std::string jetTokenLabel;
+  //  edm::EDGetTokenT<pat::JetCollection> jetToken_;
 };
 
 // functions to calculate eta from ieta, phi from iphi, and delta R
@@ -119,8 +120,10 @@ double deltaR(double eta1, double phi1, double eta2, double phi2) { // calculate
 L1DelayedJet::L1DelayedJet(const edm::ParameterSet& iConfig) :
   hcalTPSource(consumes<HcalUpgradeTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalToken"))),
   hcalTPSourceLabel(iConfig.getParameter<edm::InputTag>("hcalToken").label()),
-  jetToken(consumes<l1t::JetBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("jetToken"))),
-  jetTokenLabel(iConfig.getUntrackedParameter<edm::InputTag>("jetToken").label())
+  //  jetToken(consumes<l1t::JetBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("jetToken"))),
+  //  jetTokenLabel(iConfig.getUntrackedParameter<edm::InputTag>("jetToken").label())
+  jetToken(consumes<l1t::JetBxCollection>(iConfig.getParameter<edm::InputTag>("jetToken"))),
+  jetTokenLabel(iConfig.getParameter<edm::InputTag>("jetToken").label())
 {
   //register your products
 /* Examples
