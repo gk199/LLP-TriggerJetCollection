@@ -6,8 +6,14 @@
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.Eras.Era_Run3_cff import Run3
+import FWCore.ParameterSet.VarParsing as VarParsing # ADDED
+import FWCore.Utilities.FileUtils as FileUtils # ADDED
 
-process = cms.Process('RECO',Run3)
+process = cms.Process('RAW2DIGI',Run3)
+
+#from Configuration.Eras.Era_Run3_cff import Run3
+
+#process = cms.Process('RECO',Run3)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -26,7 +32,8 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load('DelayedJetCollection.L1DelayedJet.DelayedL1Jet_cfi')
-
+process.load('EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi')
+process.load('L1Trigger.L1TCaloLayer1.simCaloStage2Layer1Digis_cfi')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(50),
@@ -116,16 +123,86 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.AODSIMoutput_step = cms.EndPath(process.AODSIMoutput)
 
-process.p = cms.Path(process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
+process.p = cms.Path(process.caloStage2Digis * process.l1tCaloLayer1Digis * process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.RECOSIMoutput_step,process.AODSIMoutput_step,process.p)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
+# Customisation of the process
+# Automatic addition of the customisation function from L1Trigger.Configuration.customiseReEmul
+from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAWSimHcalTP 
+
+#call to customisation function L1TReEmulMCFromRAWSimHcalTP imported from L1Trigger.Configuration.customiseReEmul
+process = L1TReEmulMCFromRAWSimHcalTP(process)
+
+# Automatic addition of the customisation function from L1Trigger.Configuration.customiseReEmul
+#from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAWsimHcalTP 
+
+#call to customisation function L1TReEmulFromRAWsimHcalTP imported from L1Trigger.Configuration.customiseReEmul
+#process = L1TReEmulFromRAWsimHcalTP(process)
+
+# Automatic addition of the customisation function from L1Trigger.L1TNtuples.customiseL1Ntuple
+from L1Trigger.L1TNtuples.customiseL1Ntuple import L1NtupleRAWEMU 
+from L1Trigger.L1TNtuples.customiseL1Ntuple import L1NtupleGEN
+
+#call to customisation function L1NtupleRAWEMU imported from L1Trigger.L1TNtuples.customiseL1Ntuple
+process = L1NtupleRAWEMU(process)
+process = L1NtupleGEN(process) 
+
+# Automatic addition of the customisation function from L1Trigger.Configuration.customiseSettings
+from L1Trigger.Configuration.customiseSettings import L1TSettingsToCaloParams_2018_v1_3 
+
+#call to customisation function L1TSettingsToCaloParams_2018_v1_3 imported from L1Trigger.Configuration.customiseSettings
+process = L1TSettingsToCaloParams_2018_v1_3(process)
+
+# End of customisation functions
 
 
 # Customisation from command line
+#process.load("SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff")
+
+#process.simHcalTriggerPrimitiveDigis.numberOfFilterPresamplesHBQIE11 = 1
+#process.simHcalTriggerPrimitiveDigis.numberOfFilterPresamplesHEQIE11 = 1
+#process.simHcalTriggerPrimitiveDigis.weightsQIE11 = {
+#    "ieta1" :  [-0.47, 1.0],
+#    "ieta2" :  [-0.47, 1.0],
+#    "ieta3" :  [-0.47, 1.0],
+#    "ieta4" :  [-0.47, 1.0],
+#    "ieta5" :  [-0.47, 1.0],
+#    "ieta6" :  [-0.47, 1.0],
+#    "ieta7" :  [-0.47, 1.0],
+#    "ieta8" :  [-0.47, 1.0],
+#    "ieta9" :  [-0.47, 1.0],
+#    "ieta10" : [-0.47, 1.0],
+#    "ieta11" : [-0.47, 1.0],
+#    "ieta12" : [-0.47, 1.0],
+#    "ieta13" : [-0.47, 1.0],
+#    "ieta14" : [-0.47, 1.0],
+#    "ieta15" : [-0.47, 1.0],
+#    "ieta16" : [-0.47, 1.0],
+#    "ieta17" : [-0.47, 1.0],
+#    "ieta18" : [-0.47, 1.0],
+#    "ieta19" : [-0.47, 1.0],
+#    "ieta20" : [-0.47, 1.0],
+#    "ieta21" : [-0.43, 1.0],
+#    "ieta22" : [-0.43, 1.0],
+#    "ieta23" : [-0.43, 1.0],
+#    "ieta24" : [-0.43, 1.0],
+#    "ieta25" : [-0.43, 1.0],
+#    "ieta26" : [-0.43, 1.0],
+#    "ieta27" : [-0.43, 1.0],
+#    "ieta28" : [-0.43, 1.0]
+#}
+
+#process.HcalTPGCoderULUT.contain1TSHB = True
+#process.HcalTPGCoderULUT.contain1TSHE = True
+
+# Pick one of the pairs of lines below based on the intended scenario for running
+#process.HcalTPGCoderULUT.containPhaseNSHB = 1.0 # For Run3 MC
+#process.HcalTPGCoderULUT.containPhaseNSHE = 1.0 # For Run3 MC
+
 
 #Have logErrorHarvester wait for the same EDProducers to finish as those providing data for the OutputModule
 from FWCore.Modules.logErrorHarvester_cff import customiseLogErrorHarvesterUsingOutputCommands

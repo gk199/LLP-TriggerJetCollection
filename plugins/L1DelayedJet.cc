@@ -36,8 +36,12 @@ This creates a delayed jet collection based on the 6 bit timing and depth inform
 #include "DataFormats/L1Trigger/interface/Jet.h"
 
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
-#include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveDigi.h"
-#include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveSample.h"
+#include "DataFormats/L1CaloTrigger/interface/L1CaloCollections.h"
+#include "DataFormats/L1CaloTrigger/interface/L1CaloRegion.h"
+#include "DataFormats/L1Trigger/interface/BXVector.h"
+
+//#include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveDigi.h"
+//#include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveSample.h"
 
 
 using namespace l1extra;
@@ -66,9 +70,10 @@ private:
   //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
   // ----------member data ---------------------------
-  edm::EDGetTokenT<HcalUpgradeTrigPrimDigiCollection> hcalTPSource;
+  edm::EDGetTokenT<HcalTrigPrimDigiCollection> hcalTPSource;
   std::string hcalTPSourceLabel;
-  edm::EDGetTokenT<l1t::JetBxCollection> jetToken;
+  //  edm::EDGetTokenT<BXVector<l1t::Jet>> jetToken;
+  edm::EDGetTokenT<BXVector<l1t::Jet>> jetToken;
   std::string jetTokenLabel;
   //  edm::EDGetTokenT<pat::JetCollection> jetToken_;
 };
@@ -118,12 +123,12 @@ double deltaR(double eta1, double phi1, double eta2, double phi2) { // calculate
 // constructors and destructor
 //
 L1DelayedJet::L1DelayedJet(const edm::ParameterSet& iConfig) :
-  hcalTPSource(consumes<HcalUpgradeTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalToken"))),
+  hcalTPSource(consumes<HcalTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalToken"))),
   hcalTPSourceLabel(iConfig.getParameter<edm::InputTag>("hcalToken").label()),
   //  jetToken(consumes<l1t::JetBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("jetToken"))),
   //  jetTokenLabel(iConfig.getUntrackedParameter<edm::InputTag>("jetToken").label())
-  jetToken(consumes<l1t::JetBxCollection>(iConfig.getParameter<edm::InputTag>("jetToken"))),
-  jetTokenLabel(iConfig.getParameter<edm::InputTag>("jetToken").label())
+  jetToken(consumes<BXVector<l1t::Jet>>(edm::InputTag("caloStage2Digis","Jet","RECO"))),
+  jetTokenLabel(edm::InputTag("caloStage2Digis","Jet","RECO").label())
 {
   //register your products
 /* Examples
@@ -157,9 +162,9 @@ L1DelayedJet::~L1DelayedJet() {
 void L1DelayedJet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
 
-  edm::Handle<HcalUpgradeTrigPrimDigiCollection> hcalTPs;
+  edm::Handle<HcalTrigPrimDigiCollection> hcalTPs;
   iEvent.getByToken(hcalTPSource, hcalTPs);
-  edm::Handle<l1t::JetBxCollection> jets;
+  edm::Handle<BXVector<l1t::Jet>> jets;
   iEvent.getByToken(jetToken, jets);
 
   std::unique_ptr<L1JetParticleCollection> DelayedJetCands(new L1JetParticleCollection);
@@ -186,13 +191,14 @@ void L1DelayedJet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     int TimingFlag = 0;
     int DepthFlag = 0;
-    int Depth1_Timing5 = hcalTp.SOI_timingbit();
-    int Ndelayed = (Depth1_Timing5 & 0b000110) / 2;
-    int NveryDelayed = (Depth1_Timing5 & 0b011000) / 8;
+    //    int Depth1_Timing5 = hcalTp.SOI_timingbit();
+    int Depth3_Timing3 = hcalTp.SOI_fineGrain();
+    int Ndelayed = (Depth3_Timing3 & 0b010000) / 16;
+    int NveryDelayed = (Depth3_Timing3 & 0b100000) / 32;
     int TotalDelayed = Ndelayed + NveryDelayed;
-    int PromptVeto = (Depth1_Timing5 & 0b000001);
+    int PromptVeto = (Depth3_Timing3 & 0b001000) / 8;
     if (TotalDelayed > 0 && PromptVeto == 0) TimingFlag = 1;
-    if (Depth1_Timing5 & 0b100000) DepthFlag = 1;
+    if (Depth3_Timing3 & 0b000001) DepthFlag = 1;
 
     double min_dR = 100;
     int closest_jet = -1;
@@ -211,7 +217,7 @@ void L1DelayedJet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
     }
     if (min_dR < 0.16) {
-      LLP_TT_Jet[closest_jet] += 1;
+      if (DepthFlag == 1 || TimingFlag == 1) LLP_TT_Jet[closest_jet] += 1;
       if (DepthFlag == 1) depth_TT_Jet[closest_jet] += 1;
       if (TimingFlag == 1) timing_TT_Jet[closest_jet] += 1;
     }
