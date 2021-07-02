@@ -123,7 +123,8 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.AODSIMoutput_step = cms.EndPath(process.AODSIMoutput)
 
-process.p = cms.Path(process.caloStage2Digis * process.l1tCaloLayer1Digis * process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
+process.p = cms.Path(process.l1tCaloLayer1Digis * process.DelayedL1Jet)
+#process.p = cms.Path(process.SimCaloStage2Digis * process.l1tCaloLayer1Digis * process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.RECOSIMoutput_step,process.AODSIMoutput_step,process.p)

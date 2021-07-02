@@ -127,8 +127,8 @@ L1DelayedJet::L1DelayedJet(const edm::ParameterSet& iConfig) :
   hcalTPSourceLabel(iConfig.getParameter<edm::InputTag>("hcalToken").label()),
   //  jetToken(consumes<l1t::JetBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("jetToken"))),
   //  jetTokenLabel(iConfig.getUntrackedParameter<edm::InputTag>("jetToken").label())
-  jetToken(consumes<BXVector<l1t::Jet>>(edm::InputTag("caloStage2Digis","Jet","RECO"))),
-  jetTokenLabel(edm::InputTag("caloStage2Digis","Jet","RECO").label())
+  jetToken(consumes<BXVector<l1t::Jet>>(edm::InputTag("simCaloStage2Digis","",""))), //"Jet","RECO"))),
+  jetTokenLabel(edm::InputTag("simCaloStage2Digis","","").label()) //"Jet","RECO").label())
 {
   //register your products
 /* Examples
