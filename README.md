@@ -6,5 +6,18 @@ This is done in a CMSSW area with the timing bit implementation, using HcalUpgra
 ## AOD processing
 Steps for AOD processing are taken from here: [MC processing git repo](https://github.com/gk199/MonteCarlo_PrivateProduction/tree/master/LLP_TDC). The EDProducer [twiki instructions](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookEDMTutorialProducer#RuN) were followed as well, adding the `process.LLPjet` lines (2 of them). 
 
+## Running
+```
+cmsenv
+scram b -j 8
+python python/delayed_jet_producer_cfg.py
+cmsRun python/delayed_jet_producer_cfg.py
+```
+The collection is defined in the cfi file and called DelayedL1Jet, and should show up in the output root files as:
+```
+<l1extra::L1JetParticle> "DelayedL1Jet","DelayedJet",""
+```
+which is the type, module, label, and process. This can be seen from `edmDumpEventContent --all <name>.root`. Info on edmDumpEventContent is in [this twiki](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookEdmInfoOnDataFile) for reference.
+
 ## Location on lxplus
 This is stored at `/afs/cern.ch/work/g/gkopp/HCAL_Trigger/L1Ntuples/HCAL_TP_TimingBitEmulator/CMSSW_11_2_0/src/DelayedJetCollection/L1DelayedJet`
