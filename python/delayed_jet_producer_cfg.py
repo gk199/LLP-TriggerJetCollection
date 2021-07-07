@@ -36,7 +36,7 @@ process.load('EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi')
 process.load('L1Trigger.L1TCaloLayer1.simCaloStage2Layer1Digis_cfi')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50),
+    input = cms.untracked.int32(-1),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -90,8 +90,8 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-GEN-SIM-RECO_LLPjet_small.root'),
-    outputCommands = process.RECOSIMEventContent.outputCommands,# cms.untracked.vstring("keep *_delayedJet_*"),
+    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-GEN-SIM-RECO_LLPjet.root'),
+    outputCommands = process.RECOSIMEventContent.outputCommands + cms.untracked.vstring("keep *_DelayedL1Jet_*_*"),
     splitLevel = cms.untracked.int32(0)
 )
 
@@ -103,8 +103,8 @@ process.AODSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(31457280),
-    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-AODSIM_LLPjet_small.root'),
-    outputCommands = process.RECOSIMEventContent.outputCommands#, cms.untracked.vstring("keep *_delayedJet_*")
+    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-AODSIM_LLPjet.root'),
+    outputCommands = process.RECOSIMEventContent.outputCommands + cms.untracked.vstring("keep *_DelayedL1Jet_*_*"),
 )
 
 # Additional output definition
@@ -123,11 +123,18 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.AODSIMoutput_step = cms.EndPath(process.AODSIMoutput)
 
-process.p = cms.Path(process.l1tCaloLayer1Digis * process.DelayedL1Jet)
+process.out = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string('myOutputFile.root')
+    ,outputCommands = cms.untracked.vstring('drop *',
+                                            "keep *_DelayedL1Jet_*_*")
+)
+
+process.p = cms.Path(process.DelayedL1Jet * process.l1tCaloLayer1Digis)
+#process.p = cms.Path(process.l1tCaloLayer1Digis * process.DelayedL1Jet)
 #process.p = cms.Path(process.SimCaloStage2Digis * process.l1tCaloLayer1Digis * process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.RECOSIMoutput_step,process.AODSIMoutput_step,process.p)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.p,process.RECOSIMoutput_step,process.AODSIMoutput_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

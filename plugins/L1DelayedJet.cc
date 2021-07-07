@@ -72,10 +72,8 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<HcalTrigPrimDigiCollection> hcalTPSource;
   std::string hcalTPSourceLabel;
-  //  edm::EDGetTokenT<BXVector<l1t::Jet>> jetToken;
   edm::EDGetTokenT<BXVector<l1t::Jet>> jetToken;
   std::string jetTokenLabel;
-  //  edm::EDGetTokenT<pat::JetCollection> jetToken_;
 };
 
 // functions to calculate eta from ieta, phi from iphi, and delta R
@@ -125,8 +123,6 @@ double deltaR(double eta1, double phi1, double eta2, double phi2) { // calculate
 L1DelayedJet::L1DelayedJet(const edm::ParameterSet& iConfig) :
   hcalTPSource(consumes<HcalTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalToken"))),
   hcalTPSourceLabel(iConfig.getParameter<edm::InputTag>("hcalToken").label()),
-  //  jetToken(consumes<l1t::JetBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("jetToken"))),
-  //  jetTokenLabel(iConfig.getUntrackedParameter<edm::InputTag>("jetToken").label())
   jetToken(consumes<BXVector<l1t::Jet>>(edm::InputTag("simCaloStage2Digis","",""))), //"Jet","RECO"))),
   jetTokenLabel(edm::InputTag("simCaloStage2Digis","","").label()) //"Jet","RECO").label())
 {
