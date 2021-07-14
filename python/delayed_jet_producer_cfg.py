@@ -32,11 +32,12 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load('DelayedJetCollection.L1DelayedJet.DelayedL1Jet_cfi')
-process.load('EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi')
-process.load('L1Trigger.L1TCaloLayer1.simCaloStage2Layer1Digis_cfi')
+# following two are for l1tCaloLayer1Digis, instead we use simHcalTriggerPrimitiveDigis by adding customization functions from here https://github.com/cms-l1-dpg/L1MenuTools/blob/master/L1Ntuples/mc.py#L121-L141
+#process.load('EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi') #l1tCaloLayer1Digis
+#process.load('L1Trigger.L1TCaloLayer1.simCaloStage2Layer1Digis_cfi') #l1tCaloLayer1Digis
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1),
+    input = cms.untracked.int32(5), #-1
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -75,7 +76,7 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('step3 nevts:50'),
+    annotation = cms.untracked.string('step3 nevts:2000'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
@@ -90,7 +91,7 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-GEN-SIM-RECO_LLPjet.root'),
+    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-GEN-SIM-RECO_LLPjet_small.root'),
     outputCommands = process.RECOSIMEventContent.outputCommands + cms.untracked.vstring("keep *_DelayedL1Jet_*_*"),
     splitLevel = cms.untracked.int32(0)
 )
@@ -103,7 +104,7 @@ process.AODSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(31457280),
-    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-AODSIM_LLPjet.root'),
+    fileName = cms.untracked.string('file:/eos/cms/store/group/dpg_hcal/comm_hcal/gillian/LLP_Run3/112X_TDC74pt8/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13TeV_pythia8_cff-AODSIM_LLPjet_small.root'),
     outputCommands = process.RECOSIMEventContent.outputCommands + cms.untracked.vstring("keep *_DelayedL1Jet_*_*"),
 )
 
@@ -129,9 +130,7 @@ process.out = cms.OutputModule("PoolOutputModule",
                                             "keep *_DelayedL1Jet_*_*")
 )
 
-process.p = cms.Path(process.DelayedL1Jet * process.l1tCaloLayer1Digis)
-#process.p = cms.Path(process.l1tCaloLayer1Digis * process.DelayedL1Jet)
-#process.p = cms.Path(process.SimCaloStage2Digis * process.l1tCaloLayer1Digis * process.DelayedL1Jet) #process.LLPjet) # this is to include delayed jet collections, python config that calls the EDProducer
+process.p = cms.Path(process.DelayedL1Jet) # * process.l1tCaloLayer1Digis) # this is to include delayed jet collections, python config that calls the EDProducer
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.p,process.RECOSIMoutput_step,process.AODSIMoutput_step)
@@ -145,10 +144,7 @@ from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAWSimHcalTP
 #call to customisation function L1TReEmulMCFromRAWSimHcalTP imported from L1Trigger.Configuration.customiseReEmul
 process = L1TReEmulMCFromRAWSimHcalTP(process)
 
-# Automatic addition of the customisation function from L1Trigger.Configuration.customiseReEmul
 #from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAWsimHcalTP 
-
-#call to customisation function L1TReEmulFromRAWsimHcalTP imported from L1Trigger.Configuration.customiseReEmul
 #process = L1TReEmulFromRAWsimHcalTP(process)
 
 # Automatic addition of the customisation function from L1Trigger.L1TNtuples.customiseL1Ntuple
