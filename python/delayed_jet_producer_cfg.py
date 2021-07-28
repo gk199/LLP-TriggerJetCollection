@@ -84,6 +84,21 @@ process.configurationMetadata = cms.untracked.PSet(
 process.LLPjet = cms.EDProducer('L1DelayedJet'
                                 ,src = cms.InputTag('delayedJet')
 )
+
+#process.emulTPDigis = process.simHcalTriggerPrimitiveDigis.clone( # from https://github.com/cms-sw/cmssw/blob/master/DQM/Integration/python/clients/hcal_dqm_sourceclient-live_cfg.py#L97
+#   inputLabel = ["hcalDigis", 'hcalDigis'],
+#   FrontEndFormatError = True,
+#   FG_threshold = 2,
+#   InputTagFEDRaw = rawTag,
+#   upgradeHF = True,
+#   upgradeHE = True,
+#   upgradeHB = True,
+#   inputUpgradeLabel = ["hcalDigis", "hcalDigis"],
+   # Enable ZS on emulated TPs, to match what is done in data
+#   RunZS = True,
+#   ZS_threshold = 0
+#)
+
 # Output definition
 
 process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
@@ -130,7 +145,7 @@ process.out = cms.OutputModule("PoolOutputModule",
                                             "keep *_DelayedL1Jet_*_*")
 )
 
-process.p = cms.Path(process.DelayedL1Jet) # * process.l1tCaloLayer1Digis) # this is to include delayed jet collections, python config that calls the EDProducer
+process.p = cms.Path(process.DelayedL1Jet) # * process.emulTPDigis) # * process.l1tCaloLayer1Digis) # this is to include delayed jet collections, python config that calls the EDProducer
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.p,process.RECOSIMoutput_step,process.AODSIMoutput_step)

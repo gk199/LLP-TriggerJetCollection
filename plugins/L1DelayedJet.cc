@@ -36,15 +36,19 @@ This creates a delayed jet collection based on the 6 bit timing and depth inform
 #include "DataFormats/L1Trigger/interface/Jet.h"
 
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
+#include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveDigi.h"
+#include "DataFormats/HcalDetId/interface/HcalTrigTowerDetId.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include "DataFormats/HcalRecHit/interface/HBHERecHit.h"
+
 #include "DataFormats/L1CaloTrigger/interface/L1CaloCollections.h"
 #include "DataFormats/L1CaloTrigger/interface/L1CaloRegion.h"
 #include "DataFormats/L1Trigger/interface/BXVector.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
 
-//#include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveDigi.h"
-//#include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveSample.h"
-
-
+//using namespace l1tcalo;
 using namespace l1extra;
+using namespace std;
 
 #include "TMath.h"
 
@@ -121,8 +125,9 @@ double deltaR(double eta1, double phi1, double eta2, double phi2) { // calculate
 // constructors and destructor
 //
 L1DelayedJet::L1DelayedJet(const edm::ParameterSet& iConfig) :
-  hcalTPSource(consumes<HcalTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalToken"))),
-  hcalTPSourceLabel(iConfig.getParameter<edm::InputTag>("hcalToken").label()),
+  //  hcalTPSource(consumes<HcalTrigPrimDigiCollection>(iConfig.getUntrackedParameter<edm::InputTag>("hcalToken", edm::InputTag("emulTPDigis")))),
+  hcalTPSource(consumes<HcalTrigPrimDigiCollection>(iConfig.getParameter<edm::InputTag>("hcalToken"))),//triggerPrimitives"))), //hcalToken"))),
+  hcalTPSourceLabel(iConfig.getParameter<edm::InputTag>("hcalToken").label()), //triggerPrimitives").label()),//hcalToken").label()),
   jetToken(consumes<BXVector<l1t::Jet>>(edm::InputTag("simCaloStage2Digis","",""))), //"Jet","RECO"))),
   jetTokenLabel(edm::InputTag("simCaloStage2Digis","","").label()) //"Jet","RECO").label())
 {
@@ -175,7 +180,11 @@ void L1DelayedJet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   double timing_TT_Jet[25] = {0};
   double depth_TT_Jet[25] = {0};
 
+  std::cout << "in event loop" << std::endl;
+
+  std::cout << hcalTPs->size() << " = size of HcalTPs" << std::endl;
   for ( const auto& hcalTp : *hcalTPs ) {
+    std::cout << "in HcalTP loop" << std::endl;
     int caloEta = hcalTp.id().ieta();
     uint32_t absCaloEta = abs(caloEta);
     int caloPhi = hcalTp.id().iphi();
@@ -185,10 +194,12 @@ void L1DelayedJet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     double TPeta = etaVal(caloEta);
     double TPphi = phiVal(caloPhi);
 
+    std::cout << TPeta << std::endl;
+
     int TimingFlag = 0;
     int DepthFlag = 0;
-    //    int Depth1_Timing5 = hcalTp.SOI_timingbit();
-    int Depth3_Timing3 = hcalTp.SOI_fineGrain();
+    int Depth3_Timing3 = hcalTp.SOI_fineGrain(); // this might only return first bit by default 
+    std::cout << Depth3_Timing3 << std::endl;
     int Ndelayed = (Depth3_Timing3 & 0b010000) / 16;
     int NveryDelayed = (Depth3_Timing3 & 0b100000) / 32;
     int TotalDelayed = Ndelayed + NveryDelayed;
@@ -225,9 +236,13 @@ void L1DelayedJet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     JetPt = jet.pt();
     eta = jet.eta();
     phi = jet.phi();
+    std::cout << JetPt << " jet pT" << std::endl;
     if (LLP_TT_Jet[nJet] >= 2 && JetPt > 40) DelayedJetCands->push_back(L1JetParticle(math::PtEtaPhiMLorentzVector(JetPt, eta, phi, mass), L1JetParticle::kUndefined));
+    std::cout << int(DelayedJetCands->size()) << " delayed jet canidates" << std::endl;
     if (depth_TT_Jet[nJet] >= 2 && JetPt > 40) TimingJetCands->push_back(L1JetParticle(math::PtEtaPhiMLorentzVector(JetPt, eta, phi, mass), L1JetParticle::kUndefined));
+    std::cout << int(TimingJetCands->size()) << " timing jet canidates" << std::endl;
     if (timing_TT_Jet[nJet] >= 2 && JetPt > 40) DepthJetCands->push_back(L1JetParticle(math::PtEtaPhiMLorentzVector(JetPt, eta, phi, mass), L1JetParticle::kUndefined));
+    std::cout << int(DepthJetCands->size()) << " depth jet canidates" << std::endl;
   }
 
   iEvent.put(std::move(DelayedJetCands), "DelayedJet");

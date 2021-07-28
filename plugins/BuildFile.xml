@@ -3,5 +3,6 @@
 <use name="FWCore/PluginManager"/>
 <use name="DataFormats/Math"/>
 <use name="DataFormats/HcalDigi"/>
+<use name="DataFormats/L1CaloTrigger"/>
 <use name="DataFormats/L1Trigger"/>
 <flags EDM_PLUGIN="1"/>
