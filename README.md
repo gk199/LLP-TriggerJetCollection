@@ -5,7 +5,7 @@ This is done in a CMSSW area with the [feature bit implementation](https://githu
 ```
 SimCalorimetry/HcalTrigPrimAlgos/interface/HcalFinegrainBit.h
 SimCalorimetry/HcalTrigPrimAlgos/interface/HcalTriggerPrimitiveAlgo.h
-SimCalorimetry/HcalTrigPrimAlgos/src/ HcalFinegrainBit.cc
+SimCalorimetry/HcalTrigPrimAlgos/src/HcalFinegrainBit.cc
 SimCalorimetry/HcalTrigPrimAlgos/src/HcalTriggerPrimitiveAlgo.cc
 ```
 In the feature bit implementation, 3 bits are used for timing and 1 for depth.
@@ -50,9 +50,9 @@ The EDProducer needs a corresponding cfi file, similar to [here](https://github.
 
 A useful comparison is the L1 menu config [mc.py](https://github.com/cms-l1-dpg/L1MenuTools/blob/master/L1Ntuples/mc.py), particularly L22, L113, L117, L123-185. I had to comment out lines L145-L185 to avoid errors though. L8-L12 may also be needed.
 
-In `process.p`, the DelayedL1Jet should be listed last. Errors may come up if a module is missing (such as `process.load('EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi')` or `process.load('L1Trigger.L1TCaloLayer1.simCaloStage2Layer1Digis_cfi')`. 
+In `process.p`, the DelayedL1Jet should be listed last. Errors may come up if a module is missing (such as `process.load('EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi')` or `process.load('L1Trigger.L1TCaloLayer1.simCaloStage2Layer1Digis_cfi')`. But there are two options: l1tCaloLayer1Digis or SimDigis (the standard). I proceeded with simDigis.
 
-The collections that are expected to be needed are for hcalToken: simHcalTriggerPrimitiveDigis` and for jetToken: `simCaloStage2Digis`. CaloStage2 has a few categories, so "Jet" must be specified. 
+The collections that are expected to be needed are for hcalToken: `simHcalTriggerPrimitiveDigis` and for jetToken: `simCaloStage2Digis`. CaloStage2 has a few categories, so "Jet" must be specified. 
 
 `L1TReEmulFromRAWsimHcalTP` is likely needed since the digi collection needs to be re-emulated from RAW data (it isn't stored by default). The collections are created when running the config file, they are not in the root file. The digi collection tag is a sim digi that mc.py customization function produces.
 
